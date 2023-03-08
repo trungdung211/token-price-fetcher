@@ -1,0 +1,16 @@
+basePath: /api/v1
+host: http://localhost:8080
+info:
+  contact: {}
+  description: Project swagger
+  title: Go API
+  version: "1.0"
+paths: {}
+schemes:
+- http
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
