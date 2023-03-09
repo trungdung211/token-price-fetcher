@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
+	"github.com/trungdung211/token-price-fetcher/internal/adapters/external"
 	"github.com/trungdung211/token-price-fetcher/internal/adapters/repo"
 	usercases "github.com/trungdung211/token-price-fetcher/internal/usecases/usecases"
 	dbpkg "github.com/trungdung211/token-price-fetcher/pkg/postgres"
@@ -61,10 +62,14 @@ func Run() {
 
 	priceRepo := repo.NewPriceRepo(db)
 	emaRepo := repo.NewEmaRepo(db)
-	priceUsecase := usercases.NewPriceUsecase(priceRepo, emaRepo)
+	priceFetcher := external.NewCoinGeckoFetcher()
+	priceUsecase := usercases.NewPriceUsecase(priceRepo, emaRepo, priceFetcher)
 
 	// init router
 	initRouter(handler, l, userConfigUsecase, priceUsecase)
+
+	// init background worker
+	priceUsecase.FetchForever()
 
 	httpServer := &http.Server{
 		Handler:      handler,

@@ -4,3 +4,8 @@ debug = true
 
 [postgres]
 uri = "postgresql://postgres:postgres@localhost:5432/tokenprice?sslmode=disable"
+
+[price]
+capacity = 20
+emachan_capacity = 1000
+fetch_interval = 10

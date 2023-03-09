@@ -12,11 +12,16 @@ import (
 
 type UserConfigController struct {
 	userConfigUsecase usecase.UserConfig
+	priceUsecase      usecase.PriceUc
 	l                 *zap.Logger
 }
 
-func NewUserConfigController(us usecase.UserConfig, l *zap.Logger) *UserConfigController {
-	return &UserConfigController{us, l}
+func NewUserConfigController(us usecase.UserConfig, pc usecase.PriceUc, l *zap.Logger) *UserConfigController {
+	return &UserConfigController{
+		userConfigUsecase: us,
+		priceUsecase:      pc,
+		l:                 l,
+	}
 }
 
 type updateUserConfigReq struct {
@@ -68,6 +73,9 @@ func (uc *UserConfigController) UpdateConfig(c *gin.Context) {
 		c.Error(err)
 		return
 	}
+
+	// update token to price fetcher
+	uc.priceUsecase.NewToken(c.Request.Context(), req.Tokens)
 
 	res.Data = u
 	c.JSON(http.StatusOK, res)

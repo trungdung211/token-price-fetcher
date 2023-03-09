@@ -10,7 +10,7 @@ import (
 func initRouter(handler *gin.Engine, l *zap.Logger, us usecases.UserConfig, pu usecases.PriceUc) {
 	// userconfig
 	ucc := controller.NewUserConfigController(
-		us, l,
+		us, pu, l,
 	)
 	h := handler.Group("/userconfig/v1")
 	h.POST("/update", ucc.UpdateConfig)
