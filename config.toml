@@ -1,3 +1,6 @@
 address = ":8080"
 env = "development"
 debug = true
+
+[postgres]
+uri = "postgresql://postgres:postgres@localhost:5432/tokenprice?sslmode=disable"

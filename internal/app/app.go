@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
+	dbpkg "github.com/trungdung211/token-price-fetcher/pkg/postgres"
+
 	// Swagger docs.
 	_ "github.com/trungdung211/token-price-fetcher/gen/docs"
 
@@ -34,10 +36,10 @@ func Run() {
 	// init logger
 	l := newLogger()
 	// // init db
-	// db, err := dbpkg.NewPostgresDb(viper.GetString("postgres.uri"), true)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	_, err := dbpkg.NewPostgresDb(viper.GetString("postgres.uri"), false)
+	if err != nil {
+		panic(err)
+	}
 
 	// HTTP Server
 	handler := gin.New()

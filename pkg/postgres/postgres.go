@@ -13,6 +13,8 @@ import (
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
+
+	"github.com/trungdung211/token-price-fetcher/internal/entities/model"
 )
 
 func NewPostgresDb(uri string, migrate bool) (db *bun.DB, err error) {
@@ -36,7 +38,11 @@ func NewPostgresDb(uri string, migrate bool) (db *bun.DB, err error) {
 func initTable(db *bun.DB) {
 	var ctx = context.Background()
 
-	entities := []interface{}{}
+	entities := []interface{}{
+		new(model.UserConfig),
+		new(model.Price),
+		new(model.Ema),
+	}
 
 	for _, entity := range entities {
 		_, err := db.NewCreateTable().Model(entity).IfNotExists().Exec(ctx)
