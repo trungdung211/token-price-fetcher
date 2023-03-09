@@ -1,11 +1,129 @@
-basePath: /api/v1
-host: http://localhost:8080
+basePath: /
+definitions:
+  controller.updateUserConfigReq:
+    properties:
+      condition:
+        items:
+          type: string
+        type: array
+      tokens:
+        items:
+          type: string
+        type: array
+    type: object
+  model.TokenPriceModel:
+    properties:
+      ema7_1d:
+        type: number
+      ema7_1h:
+        type: number
+      ema7_1m:
+        type: number
+      ema7_4h:
+        type: number
+      ema20_1d:
+        type: number
+      ema20_1h:
+        type: number
+      ema20_1m:
+        type: number
+      ema20_4h:
+        type: number
+      price_usd:
+        type: number
+      time:
+        type: string
+    type: object
+  model.UserConfig:
+    properties:
+      conditions:
+        description: condition
+        items:
+          type: string
+        type: array
+      created_at:
+        description: audit
+        type: string
+      id:
+        type: string
+      token:
+        description: token list
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  request.Response:
+    properties:
+      count:
+        type: integer
+      data: {}
+      error_code:
+        type: string
+      error_message:
+        type: string
+      server_time:
+        type: integer
+    type: object
+host: localhost:8080
 info:
   contact: {}
   description: Project swagger
   title: Go API
   version: "1.0"
-paths: {}
+paths:
+  /prices/v1/token/{token}:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/request.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TokenPriceModel'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get Token Price
+      tags:
+      - Price
+  /userconfig/v1/update:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: userconfig create body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateUserConfigReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/request.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserConfig'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update User Config
+      tags:
+      - UserConfig
 schemes:
 - http
 securityDefinitions:

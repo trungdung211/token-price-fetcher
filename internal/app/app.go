@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
+	"github.com/trungdung211/token-price-fetcher/internal/adapters/repo"
+	usercases "github.com/trungdung211/token-price-fetcher/internal/usecases/usecases"
 	dbpkg "github.com/trungdung211/token-price-fetcher/pkg/postgres"
 
 	// Swagger docs.
@@ -26,8 +28,8 @@ import (
 // @title       Go API
 // @description Project swagger
 // @version     1.0
-// @host        http://localhost:8080
-// @BasePath    /api/v1
+// @host        localhost:8080
+// @BasePath    /
 // @schemes http
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
@@ -36,7 +38,7 @@ func Run() {
 	// init logger
 	l := newLogger()
 	// // init db
-	_, err := dbpkg.NewPostgresDb(viper.GetString("postgres.uri"), false)
+	db, err := dbpkg.NewPostgresDb(viper.GetString("postgres.uri"), false)
 	if err != nil {
 		panic(err)
 	}
@@ -52,6 +54,17 @@ func Run() {
 	// Swagger
 	swaggerHandler := ginSwagger.WrapHandler(swaggerFiles.Handler)
 	handler.GET("/swagger/*any", swaggerHandler)
+
+	// init usecase
+	userConfigRepo := repo.NewUserConfigRepo(db)
+	userConfigUsecase := usercases.NewUserConfigUsecase(userConfigRepo)
+
+	priceRepo := repo.NewPriceRepo(db)
+	emaRepo := repo.NewEmaRepo(db)
+	priceUsecase := usercases.NewPriceUsecase(priceRepo, emaRepo)
+
+	// init router
+	initRouter(handler, l, userConfigUsecase, priceUsecase)
 
 	httpServer := &http.Server{
 		Handler:      handler,
