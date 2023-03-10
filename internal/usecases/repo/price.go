@@ -9,4 +9,5 @@ import (
 type PriceRepo interface {
 	GetPrice(ctx context.Context, token string) (*model.Price, error)
 	InsertPrice(ctx context.Context, p *model.Price) (*model.Price, error)
+	GetLastSeries(ctx context.Context, token string, durations []model.Resolution, capacity int) ([]*model.Price, error)
 }

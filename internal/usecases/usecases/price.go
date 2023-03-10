@@ -20,7 +20,6 @@ type priceUsecase struct {
 	priceAgg     *priceAgg
 	insertChan   chan (*timeseries.TimeValueResolution)
 	emaSmooth    float32
-	loader       HistoryLoader
 }
 
 type PriceUc interface {
@@ -42,16 +41,7 @@ func NewPriceUsecase(l *zap.Logger, priceRepo repo.PriceRepo, emaRepo repo.EmaRe
 		priceAgg:     NewPriceAgg(&insertChan),
 		insertChan:   insertChan,
 		emaSmooth:    emaSmooth,
-		loader:       NewHistoryLoader(),
 	}
-}
-
-func (uc *priceUsecase) Load(ctx context.Context) error {
-	capacity := viper.GetInt("price.capacity")
-	err := uc.loader.Load(func(name string, series []*timeseries.TimeValue) error {
-		return nil
-	}, capacity)
-	return err
 }
 
 func (uc *priceUsecase) NewToken(ctx context.Context, tokens []string) error {
