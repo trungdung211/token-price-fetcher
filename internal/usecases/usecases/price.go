@@ -22,6 +22,7 @@ type priceUsecase struct {
 	emaSmooth            float32
 	capacity             int
 	supportedResolutions []timeseries.Resolution
+	trigger              TriggerCondition
 }
 
 type PriceUc interface {
@@ -31,7 +32,7 @@ type PriceUc interface {
 	FetchForever() error
 }
 
-func NewPriceUsecase(l *zap.Logger, priceRepo repo.PriceRepo, userConfigRepo repo.UserConfigRepo, priceFetcher external.PriceFetcher) PriceUc {
+func NewPriceUsecase(l *zap.Logger, priceRepo repo.PriceRepo, userConfigRepo repo.UserConfigRepo, priceFetcher external.PriceFetcher, trigger TriggerCondition) PriceUc {
 	insertChan := make(chan (*timeseries.TimeValueResolution), viper.GetInt("price.emachan_capacity"))
 	emaSmooth := (float32)(viper.GetFloat64("price.ema_smooth"))
 	capacity := viper.GetInt("price.capacity")
@@ -48,6 +49,7 @@ func NewPriceUsecase(l *zap.Logger, priceRepo repo.PriceRepo, userConfigRepo rep
 		userConfigRepo:       userConfigRepo,
 		priceFetcher:         priceFetcher,
 		priceAgg:             NewPriceAgg(supportedResolutions, &insertChan, capacity),
+		trigger:              trigger,
 		insertChan:           insertChan,
 		emaSmooth:            emaSmooth,
 		capacity:             capacity,
@@ -84,17 +86,20 @@ func (uc *priceUsecase) FetchForever() error {
 	go func() {
 		for {
 			inserted := <-uc.insertChan
+			token := inserted.Name
 			// persist to db
 			uc.priceRepo.InsertPrice(ctx, &model.Price{
 				Time:       inserted.TV.Time,
 				PriceUSD:   inserted.TV.Value,
-				Token:      inserted.Name,
+				Token:      token,
 				Resolution: inserted.Resolution,
 			})
 			// calc ema
-			uc.priceAgg.CalcEMA(inserted.Name, inserted.Resolution, inserted.TV.Value, inserted.TV.Time, uc.emaSmooth)
+			uc.priceAgg.CalcEMA(token, inserted.Resolution, inserted.TV.Value, inserted.TV.Time, uc.emaSmooth)
 
 			// trigger condition
+			updatedState, _ := uc.priceAgg.GetTokenPriceState(inserted.Name)
+			go uc.trigger.Trigger(ctx, token, updatedState)
 		}
 	}()
 

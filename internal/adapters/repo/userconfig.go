@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	model "github.com/trungdung211/token-price-fetcher/internal/entities/model"
@@ -33,8 +34,19 @@ func (ur *userConfigRepo) Update(ctx context.Context, u *model.UserConfig) (*mod
 	return u, err
 }
 
-func (ur *userConfigRepo) GetList(ctx context.Context) ([]*model.UserConfig, error) {
+func (ur *userConfigRepo) GetAll(ctx context.Context) ([]*model.UserConfig, error) {
 	out := make([]*model.UserConfig, 0)
 	err := ur.db.NewSelect().Model(&out).Scan(ctx)
+	return out, err
+}
+
+func (ur *userConfigRepo) GetByToken(ctx context.Context, token string) ([]*model.UserConfig, error) {
+	out := make([]*model.UserConfig, 0)
+
+	err := ur.db.NewRaw(
+		fmt.Sprintf(`select * from user_config
+						where tokens::jsonb ? '%s';`, token),
+	).Scan(ctx, &out)
+
 	return out, err
 }

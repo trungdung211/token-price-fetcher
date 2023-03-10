@@ -9,7 +9,7 @@ import (
 
 func (uc *priceUsecase) Load(ctx context.Context) error {
 	// load token list
-	list, err := uc.userConfigRepo.GetList(ctx)
+	list, err := uc.userConfigRepo.GetAll(ctx)
 	if err != nil {
 		return err
 	}
