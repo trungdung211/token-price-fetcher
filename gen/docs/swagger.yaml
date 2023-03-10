@@ -79,6 +79,12 @@ paths:
     get:
       consumes:
       - application/json
+      parameters:
+      - description: token
+        in: path
+        name: token
+        required: true
+        type: string
       produces:
       - application/json
       responses:

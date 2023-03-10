@@ -23,7 +23,7 @@ func NewPriceController(priceUc usecases.PriceUc, l *zap.Logger) *PriceControlle
 // @Tags Price
 // @Accept json
 // @Produce json
-// @Success 200
+// @Param token path string true "token"
 // @Success 200 {object} request.Response{data=model.TokenPriceModel}
 // @Router /prices/v1/token/{token} [get]
 // @Security ApiKeyAuth
@@ -35,7 +35,7 @@ func (pc *PriceController) GetPrice(c *gin.Context) {
 	data, err := pc.priceUsecase.GetTokenPrice(c.Request.Context(), token)
 	if err != nil {
 		pc.l.Error("priceUsecase.GetTokenPrice error", zap.Any("err", err), zap.Any("token", token))
-		c.Error(err)
+		c.Error(request.NewError(http.StatusBadRequest, "404", err.Error()))
 		return
 	}
 

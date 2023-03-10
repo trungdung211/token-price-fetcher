@@ -11,10 +11,11 @@ import (
 type Price struct {
 	bun.BaseModel `bun:"table:price" swaggerignore:"true"`
 
-	Id       uuid.UUID `bun:",pk,type:uuid"`
-	Time     time.Time `bun:"time,type:timestamptz"`
-	Token    string    `bun:"token,type:varchar(24)"`
-	PriceUSD float32   `bun:"price_usd,type:real"`
+	Id         uuid.UUID  `bun:",pk,type:uuid"`
+	Time       time.Time  `bun:"time,type:timestamptz"`
+	Token      string     `bun:"token,type:varchar(24)"`
+	Resolution Resolution `bun:"resolution,type:smallint"`
+	PriceUSD   float32    `bun:"price_usd,type:real"`
 }
 
 var _ bun.BeforeAppendModelHook = (*Price)(nil)

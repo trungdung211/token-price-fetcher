@@ -62,8 +62,8 @@ func Run() {
 
 	priceRepo := repo.NewPriceRepo(db)
 	emaRepo := repo.NewEmaRepo(db)
-	priceFetcher := external.NewCoinGeckoFetcher()
-	priceUsecase := usercases.NewPriceUsecase(priceRepo, emaRepo, priceFetcher)
+	priceFetcher := external.NewCoinGeckoFetcher(l)
+	priceUsecase := usercases.NewPriceUsecase(l, priceRepo, emaRepo, priceFetcher)
 
 	// init router
 	initRouter(handler, l, userConfigUsecase, priceUsecase)

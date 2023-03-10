@@ -18,5 +18,5 @@ func initRouter(handler *gin.Engine, l *zap.Logger, us usecases.UserConfig, pu u
 	// price
 	pc := controller.NewPriceController(pu, l)
 	h = handler.Group("/prices/v1")
-	h.GET("/token/{token}", pc.GetPrice)
+	h.GET("/token/:token", pc.GetPrice)
 }
