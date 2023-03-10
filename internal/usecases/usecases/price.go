@@ -1,4 +1,4 @@
-package usercases
+package usecases
 
 import (
 	"context"
@@ -20,9 +20,11 @@ type priceUsecase struct {
 	priceAgg     *priceAgg
 	insertChan   chan (*timeseries.TimeValueResolution)
 	emaSmooth    float32
+	loader       HistoryLoader
 }
 
 type PriceUc interface {
+	Load(ctx context.Context) error
 	NewToken(ctx context.Context, tokens []string) error
 	GetTokenPrice(ctx context.Context, token string) (*model.TokenPriceModel, error)
 	FetchForever() error
@@ -40,7 +42,16 @@ func NewPriceUsecase(l *zap.Logger, priceRepo repo.PriceRepo, emaRepo repo.EmaRe
 		priceAgg:     NewPriceAgg(&insertChan),
 		insertChan:   insertChan,
 		emaSmooth:    emaSmooth,
+		loader:       NewHistoryLoader(),
 	}
+}
+
+func (uc *priceUsecase) Load(ctx context.Context) error {
+	capacity := viper.GetInt("price.capacity")
+	err := uc.loader.Load(func(name string, series []*timeseries.TimeValue) error {
+		return nil
+	}, capacity)
+	return err
 }
 
 func (uc *priceUsecase) NewToken(ctx context.Context, tokens []string) error {

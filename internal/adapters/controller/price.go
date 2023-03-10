@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -17,6 +18,18 @@ type PriceController struct {
 
 func NewPriceController(priceUc usecases.PriceUc, l *zap.Logger) *PriceController {
 	return &PriceController{priceUc, l}
+}
+
+type priceEma struct {
+	Metric     string  `json:"metric"`
+	Resolution string  `json:"resolution"`
+	Value      float32 `json:"value"`
+}
+
+type priceModel struct {
+	PriceUSD float32     `json:"price_usd"`
+	EMA      []*priceEma `json:"ema"`
+	Time     time.Time   `json:"time"`
 }
 
 // @Summary Get Token Price
@@ -39,6 +52,19 @@ func (pc *PriceController) GetPrice(c *gin.Context) {
 		return
 	}
 
-	res.Data = data
+	ema := make([]*priceEma, 0)
+	for _, m := range data.EMA {
+		ema = append(ema, &priceEma{
+			Metric:     m.Metric,
+			Resolution: m.Resolution.ToString(),
+			Value:      m.Value,
+		})
+	}
+
+	res.Data = &priceModel{
+		PriceUSD: data.PriceUSD,
+		Time:     data.Time,
+		EMA:      ema,
+	}
 	c.JSON(http.StatusOK, res)
 }

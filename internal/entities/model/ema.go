@@ -11,11 +11,25 @@ import (
 type Resolution int
 
 const (
-	EMA_RESOLUT_1_MIN = iota
+	EMA_RESOLUT_1_MIN Resolution = iota
 	EMA_RESOLUT_1_HOUR
 	EMA_RESOLUT_4_HOUR
 	EMA_RESOLUT_1_DAY
 )
+
+func (r *Resolution) ToString() string {
+	switch *r {
+	case EMA_RESOLUT_1_MIN:
+		return "1min"
+	case EMA_RESOLUT_1_HOUR:
+		return "1hour"
+	case EMA_RESOLUT_4_HOUR:
+		return "4hours"
+	case EMA_RESOLUT_1_DAY:
+		return "1day"
+	}
+	return ""
+}
 
 type Ema struct {
 	bun.BaseModel `bun:"table:ema" swaggerignore:"true"`
