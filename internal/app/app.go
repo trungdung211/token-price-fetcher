@@ -61,14 +61,18 @@ func Run() {
 	userConfigUsecase := usercases.NewUserConfigUsecase(userConfigRepo)
 
 	priceRepo := repo.NewPriceRepo(db)
-	emaRepo := repo.NewEmaRepo(db)
 	priceFetcher := external.NewCoinGeckoFetcher(l)
-	priceUsecase := usercases.NewPriceUsecase(l, priceRepo, emaRepo, priceFetcher)
+	priceUsecase := usercases.NewPriceUsecase(l, priceRepo, userConfigRepo, priceFetcher)
 
 	// init router
 	initRouter(handler, l, userConfigUsecase, priceUsecase)
 
 	// init background worker
+	err = priceUsecase.Load(context.Background())
+	if err != nil {
+		l.Error("priceUsecase.Load err", zap.Any("err", err))
+		panic(err)
+	}
 	priceUsecase.FetchForever()
 
 	httpServer := &http.Server{

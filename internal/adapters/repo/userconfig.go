@@ -32,3 +32,9 @@ func (ur *userConfigRepo) Update(ctx context.Context, u *model.UserConfig) (*mod
 	_, err := ur.db.NewUpdate().Model(u).WherePK().Exec(ctx)
 	return u, err
 }
+
+func (ur *userConfigRepo) GetList(ctx context.Context) ([]*model.UserConfig, error) {
+	out := make([]*model.UserConfig, 0)
+	err := ur.db.NewSelect().Model(&out).Scan(ctx)
+	return out, err
+}

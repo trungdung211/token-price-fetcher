@@ -13,6 +13,20 @@ const (
 	TIME_RESOLUTION_1_DAY
 )
 
+func (r *Resolution) ToString() string {
+	switch *r {
+	case TIME_RESOLUTION_1_MIN:
+		return "1min"
+	case TIME_RESOLUTION_1_HOUR:
+		return "1hour"
+	case TIME_RESOLUTION_4_HOURS:
+		return "4hours"
+	case TIME_RESOLUTION_1_DAY:
+		return "1day"
+	}
+	return ""
+}
+
 func resolution2Duration(resol Resolution) time.Duration {
 	switch resol {
 	case TIME_RESOLUTION_1_MIN:

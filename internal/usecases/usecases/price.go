@@ -13,13 +13,15 @@ import (
 )
 
 type priceUsecase struct {
-	l            *zap.Logger
-	priceRepo    repo.PriceRepo
-	emaRepo      repo.EmaRepo
-	priceFetcher external.PriceFetcher
-	priceAgg     *priceAgg
-	insertChan   chan (*timeseries.TimeValueResolution)
-	emaSmooth    float32
+	l                    *zap.Logger
+	priceRepo            repo.PriceRepo
+	userConfigRepo       repo.UserConfigRepo
+	priceFetcher         external.PriceFetcher
+	priceAgg             *priceAgg
+	insertChan           chan (*timeseries.TimeValueResolution)
+	emaSmooth            float32
+	capacity             int
+	supportedResolutions []timeseries.Resolution
 }
 
 type PriceUc interface {
@@ -29,18 +31,27 @@ type PriceUc interface {
 	FetchForever() error
 }
 
-func NewPriceUsecase(l *zap.Logger, priceRepo repo.PriceRepo, emaRepo repo.EmaRepo, priceFetcher external.PriceFetcher) PriceUc {
+func NewPriceUsecase(l *zap.Logger, priceRepo repo.PriceRepo, userConfigRepo repo.UserConfigRepo, priceFetcher external.PriceFetcher) PriceUc {
 	insertChan := make(chan (*timeseries.TimeValueResolution), viper.GetInt("price.emachan_capacity"))
 	emaSmooth := (float32)(viper.GetFloat64("price.ema_smooth"))
+	capacity := viper.GetInt("price.capacity")
+	supportedResolutions := []timeseries.Resolution{
+		timeseries.TIME_RESOLUTION_1_MIN,
+		timeseries.TIME_RESOLUTION_1_HOUR,
+		timeseries.TIME_RESOLUTION_4_HOURS,
+		timeseries.TIME_RESOLUTION_1_DAY,
+	}
 
 	return &priceUsecase{
-		l:            l,
-		priceRepo:    priceRepo,
-		emaRepo:      emaRepo,
-		priceFetcher: priceFetcher,
-		priceAgg:     NewPriceAgg(&insertChan),
-		insertChan:   insertChan,
-		emaSmooth:    emaSmooth,
+		l:                    l,
+		priceRepo:            priceRepo,
+		userConfigRepo:       userConfigRepo,
+		priceFetcher:         priceFetcher,
+		priceAgg:             NewPriceAgg(supportedResolutions, &insertChan, capacity),
+		insertChan:           insertChan,
+		emaSmooth:            emaSmooth,
+		capacity:             capacity,
+		supportedResolutions: supportedResolutions,
 	}
 }
 
@@ -51,8 +62,11 @@ func (uc *priceUsecase) NewToken(ctx context.Context, tokens []string) error {
 			continue
 		}
 		// TODO : get old price data from db
+		series, _ := uc.loadSeriesFromDB(ctx, token)
+		uc.l.Info("Load last series for token", zap.Any("count", len(series)), zap.Any("token", token))
+
 		// do new token
-		uc.priceAgg.NewToken(token, []*timeseries.TimeValue{})
+		uc.priceAgg.NewToken(token, series)
 	}
 
 	return nil
@@ -75,7 +89,7 @@ func (uc *priceUsecase) FetchForever() error {
 				Time:       inserted.TV.Time,
 				PriceUSD:   inserted.TV.Value,
 				Token:      inserted.Name,
-				Resolution: model.Resolution(inserted.Resolution),
+				Resolution: inserted.Resolution,
 			})
 			// calc ema
 			uc.priceAgg.CalcEMA(inserted.Name, inserted.Resolution, inserted.TV.Value, inserted.TV.Time, uc.emaSmooth)
@@ -113,7 +127,7 @@ func (uc *priceUsecase) FetchForever() error {
 				if err != nil {
 					continue
 				}
-				series.Add(price, time.Now())
+				series.Add(price, time.Now(), true)
 			}
 		}()
 	}

@@ -12,4 +12,5 @@ type UserConfigRepo interface {
 	GetByUserId(ctx context.Context, userId uuid.UUID) (*model.UserConfig, error)
 	Create(ctx context.Context, u *model.UserConfig) (*model.UserConfig, error)
 	Update(ctx context.Context, u *model.UserConfig) (*model.UserConfig, error)
+	GetList(ctx context.Context) ([]*model.UserConfig, error)
 }

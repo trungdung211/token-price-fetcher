@@ -1,10 +1,14 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/trungdung211/token-price-fetcher/pkg/timeseries"
+)
 
 type TokenPriceEma struct {
 	Metric     string
-	Resolution Resolution
+	Resolution timeseries.Resolution
 	Value      float32
 }
 

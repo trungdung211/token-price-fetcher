@@ -39,7 +39,7 @@ func NewMultiResolutionTimeSeries(name string, resolutions []Resolution, capacit
 	}
 }
 
-func (t *MultiResolutionTimeSeries) Add(value float32, ts time.Time) {
+func (t *MultiResolutionTimeSeries) Add(value float32, ts time.Time, new bool) {
 	for resol, bucket := range t.buckets {
 		if out, outTs, finished := bucket.Add(value, ts); finished {
 			tv := &TimeValue{
@@ -50,7 +50,7 @@ func (t *MultiResolutionTimeSeries) Add(value float32, ts time.Time) {
 			if len(t.series[resol]) > t.capacity {
 				t.series[resol] = t.series[resol][1:]
 			}
-			if t.insertChan != nil {
+			if new && t.insertChan != nil {
 				(*t.insertChan) <- &TimeValueResolution{
 					TV:         tv,
 					Resolution: resol,
@@ -63,7 +63,7 @@ func (t *MultiResolutionTimeSeries) Add(value float32, ts time.Time) {
 
 func (t *MultiResolutionTimeSeries) ReplaceSeries(series []*TimeValue) (err error) {
 	for _, s := range series {
-		t.Add(s.Value, s.Time)
+		t.Add(s.Value, s.Time, false)
 	}
 	return
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/viper"
 	"github.com/trungdung211/token-price-fetcher/internal/entities/model"
 	"github.com/trungdung211/token-price-fetcher/pkg/timeseries"
 )
@@ -22,7 +21,7 @@ func newState() *state {
 	}
 }
 
-func (s *state) Save(metric string, resolution model.Resolution, value float32) {
+func (s *state) Save(metric string, resolution timeseries.Resolution, value float32) {
 	key := fmt.Sprintf("%v:%v", metric, resolution)
 	if _, found := s.data[key]; found {
 		s.data[key].Value = value
@@ -39,7 +38,7 @@ func (s *state) Save(metric string, resolution model.Resolution, value float32) 
 	s.time = time.Now()
 }
 
-func (s *state) Get(metric string, resolution model.Resolution) (float32, error) {
+func (s *state) Get(metric string, resolution timeseries.Resolution) (float32, error) {
 	key := fmt.Sprintf("%v:%v", metric, resolution)
 	if val, found := s.data[key]; found {
 		return val.Value, nil
@@ -62,18 +61,20 @@ func (s *state) GetAsTokenPriceModel() (*model.TokenPriceModel, error) {
 }
 
 type priceAgg struct {
-	tokenSeries     map[string]*timeseries.MultiResolutionTimeSeries
-	tokenPriceState map[string]*state
-	capacity        int
-	insertChan      *chan (*timeseries.TimeValueResolution)
+	tokenSeries          map[string]*timeseries.MultiResolutionTimeSeries
+	tokenPriceState      map[string]*state
+	capacity             int
+	supportedResolutions []timeseries.Resolution
+	insertChan           *chan (*timeseries.TimeValueResolution)
 }
 
-func NewPriceAgg(insertChan *chan (*timeseries.TimeValueResolution)) *priceAgg {
+func NewPriceAgg(supportedResolutions []timeseries.Resolution, insertChan *chan (*timeseries.TimeValueResolution), capacity int) *priceAgg {
 	return &priceAgg{
-		tokenSeries:     make(map[string]*timeseries.MultiResolutionTimeSeries, 0),
-		tokenPriceState: make(map[string]*state, 0),
-		capacity:        viper.GetInt("price.capacity"),
-		insertChan:      insertChan,
+		tokenSeries:          make(map[string]*timeseries.MultiResolutionTimeSeries, 0),
+		tokenPriceState:      make(map[string]*state, 0),
+		capacity:             capacity,
+		supportedResolutions: supportedResolutions,
+		insertChan:           insertChan,
 	}
 }
 
@@ -83,17 +84,10 @@ func (p *priceAgg) HasToken(token string) bool {
 }
 
 func (p *priceAgg) NewToken(token string, series []*timeseries.TimeValue) (err error) {
-	RESOLUTIONS := []timeseries.Resolution{
-		timeseries.TIME_RESOLUTION_1_MIN,
-		timeseries.TIME_RESOLUTION_1_HOUR,
-		timeseries.TIME_RESOLUTION_4_HOURS,
-		timeseries.TIME_RESOLUTION_1_DAY,
-	}
-
 	// init price series
 	ts := timeseries.NewMultiResolutionTimeSeries(
 		token,
-		RESOLUTIONS,
+		p.supportedResolutions,
 		p.capacity,
 		p.insertChan,
 	)
@@ -140,11 +134,11 @@ func (p *priceAgg) CalcEMA(token string, resolution timeseries.Resolution, value
 	state := p.tokenPriceState[token]
 	// ema7
 	ema7, err := timeseries.CalcEMAFromTimeSeries(priceSeries, 7, emaSmooth)
-	state.Save("ema-7", model.Resolution(resolution), ema7)
+	state.Save("ema-7", resolution, ema7)
 
 	// ema20
 	ema20, err := timeseries.CalcEMAFromTimeSeries(priceSeries, 20, emaSmooth)
-	state.Save("ema-20", model.Resolution(resolution), ema20)
+	state.Save("ema-20", resolution, ema20)
 
 	return nil
 }
