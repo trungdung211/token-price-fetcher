@@ -41,7 +41,6 @@ func initTable(db *bun.DB) {
 	entities := []interface{}{
 		new(model.UserConfig),
 		new(model.Price),
-		new(model.Ema),
 	}
 
 	for _, entity := range entities {

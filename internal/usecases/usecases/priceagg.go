@@ -133,7 +133,6 @@ func (p *priceAgg) CalcEMA(token string, resolution timeseries.Resolution, value
 	state := p.tokenPriceState[token]
 	// ema7
 	ema7, _ := timeseries.CalcEMAFromTimeSeries(priceSeries, 7, emaSmooth)
-	fmt.Printf("ema-7 %v\n", ema7)
 	state.Save("ema-7", resolution, ema7)
 
 	// ema20
