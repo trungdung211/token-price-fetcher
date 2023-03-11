@@ -53,7 +53,7 @@ func (d *discordAlert) doSendAlert(discordWebhookUrl string, message string, sch
 
 	var username = d.botUserName
 	var content = fmt.Sprintf(
-		"\n ⚡Token Price Alert ⚡ \n\n%s\n",
+		"\n\n ⚡Token Price Alert ⚡ \n\n%s\n",
 		message,
 	)
 

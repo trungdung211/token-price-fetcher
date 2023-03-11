@@ -1,9 +1,11 @@
 ## Todo
-- config .air.toml
 - config migrate
 - docker file
-- health, metrics endpoint
-- create database if not exists
+- deal with discord ratelimit
+- support DEXs
+- clean database
+- validate token vs DEXs
+- perf benchmark
 
 # dev guide
 - swag

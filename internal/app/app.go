@@ -48,6 +48,9 @@ func Run() {
 	// HTTP Server
 	handler := gin.New()
 
+	// health check
+	handler.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
+
 	// Options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
