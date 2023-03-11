@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/trungdung211/token-price-fetcher/internal/entities/model"
@@ -32,6 +33,11 @@ func NewUserConfigUsecase(r repo.UserConfigRepo) UserConfig {
 func (uu *userConfigUsecase) UpdateConfig(ctx context.Context, u *model.UserConfig) (*model.UserConfig, error) {
 	// fake userId
 	u.UserId = DEFAULT_USER_ID
+
+	// validate send discord
+	if u.SendNotify && u.DiscordWebhook == nil {
+		return nil, errors.New("required discord webhook")
+	}
 
 	data, err := uu.userRepo.GetByUserId(ctx, u.UserId)
 	if err != nil {

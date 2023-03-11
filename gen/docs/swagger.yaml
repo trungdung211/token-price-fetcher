@@ -6,29 +6,30 @@ definitions:
         items:
           type: string
         type: array
+      discord_webhook:
+        type: string
+      send_notify:
+        type: boolean
       tokens:
         items:
           type: string
         type: array
     type: object
+  model.TokenPriceEma:
+    properties:
+      metric:
+        type: string
+      resolution:
+        $ref: '#/definitions/timeseries.Resolution'
+      value:
+        type: number
+    type: object
   model.TokenPriceModel:
     properties:
-      ema7_1d:
-        type: number
-      ema7_1h:
-        type: number
-      ema7_1m:
-        type: number
-      ema7_4h:
-        type: number
-      ema20_1d:
-        type: number
-      ema20_1h:
-        type: number
-      ema20_1m:
-        type: number
-      ema20_4h:
-        type: number
+      ema:
+        items:
+          $ref: '#/definitions/model.TokenPriceEma'
+        type: array
       price_usd:
         type: number
       time:
@@ -44,8 +45,13 @@ definitions:
       created_at:
         description: audit
         type: string
+      discord_webhook:
+        type: string
       id:
         type: string
+      send_notify:
+        description: discord info
+        type: boolean
       token:
         description: token list
         items:
@@ -68,6 +74,18 @@ definitions:
       server_time:
         type: integer
     type: object
+  timeseries.Resolution:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - TIME_RESOLUTION_1_MIN
+    - TIME_RESOLUTION_1_HOUR
+    - TIME_RESOLUTION_4_HOURS
+    - TIME_RESOLUTION_1_DAY
 host: localhost:8080
 info:
   contact: {}

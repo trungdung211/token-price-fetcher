@@ -23,7 +23,7 @@ func (c *ConditionDipsEMA20R1H) IsMatched(state *model.TokenPriceModel) (out str
 	if ema, err := state.Get("ema-20", timeseries.TIME_RESOLUTION_1_HOUR); err == nil {
 		matched = state.PriceUSD < ema && ema > 0
 		if matched {
-			out = fmt.Sprintf(`The price dips under its one-hour EMA-20 (price_usd = %v, ema = %v)`, state.PriceUSD, ema)
+			out = fmt.Sprintf(`The price dips ☹ under its one-hour EMA-20 (price_usd = %v, ema = %v)`, state.PriceUSD, ema)
 		}
 	}
 	return
@@ -40,7 +40,7 @@ func (c *ConditionDipsEMA7R4H) IsMatched(state *model.TokenPriceModel) (out stri
 	if ema, err := state.Get("ema-7", timeseries.TIME_RESOLUTION_4_HOURS); err == nil {
 		matched = state.PriceUSD < ema && ema > 0
 		if matched {
-			out = fmt.Sprintf(`The price dips under its four-hours EMA-7 (price_usd = %v, ema = %v)`, state.PriceUSD, ema)
+			out = fmt.Sprintf(`The price dips ☹ under its four-hours EMA-7 (price_usd = %v, ema = %v)`, state.PriceUSD, ema)
 		}
 	}
 	return
@@ -57,7 +57,7 @@ func (c *ConditionDipsEMA7R1M) IsMatched(state *model.TokenPriceModel) (out stri
 	if ema, err := state.Get("ema-7", timeseries.TIME_RESOLUTION_1_MIN); err == nil {
 		matched = state.PriceUSD < ema && ema > 0
 		if matched {
-			out = fmt.Sprintf(`The price dips under its one-minute EMA-7 (price_usd = %v, ema = %v)`, state.PriceUSD, ema)
+			out = fmt.Sprintf(`The price dips ☹ under its one-minute EMA-7 (price_usd = %v, ema = %v)`, state.PriceUSD, ema)
 		}
 	}
 	return

@@ -14,6 +14,7 @@ import (
 
 	"github.com/trungdung211/token-price-fetcher/internal/adapters/external"
 	"github.com/trungdung211/token-price-fetcher/internal/adapters/repo"
+	"github.com/trungdung211/token-price-fetcher/internal/usecases/usecases"
 	usercases "github.com/trungdung211/token-price-fetcher/internal/usecases/usecases"
 	dbpkg "github.com/trungdung211/token-price-fetcher/pkg/postgres"
 
@@ -62,7 +63,13 @@ func Run() {
 
 	priceRepo := repo.NewPriceRepo(db)
 	priceFetcher := external.NewCoinGeckoFetcher(l)
-	priceUsecase := usercases.NewPriceUsecase(l, priceRepo, userConfigRepo, priceFetcher)
+	discordAlert := external.NewDiscordAlert(
+		l,
+		viper.GetString("discord.botname"),
+		time.Duration(viper.GetInt("discord.delay_send"))*time.Millisecond,
+	)
+	triggerCondition := usecases.NewTriggerCondition(l, userConfigRepo, discordAlert)
+	priceUsecase := usercases.NewPriceUsecase(l, priceRepo, userConfigRepo, priceFetcher, triggerCondition)
 
 	// init router
 	initRouter(handler, l, userConfigUsecase, priceUsecase)

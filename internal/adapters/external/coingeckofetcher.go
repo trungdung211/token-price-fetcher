@@ -17,5 +17,5 @@ func NewCoinGeckoFetcher(l *zap.Logger) external.PriceFetcher {
 
 func (c *coinGeckoFetcher) GetPriceUSD(token string) (float32, error) {
 	c.l.Debug("Fetch token", zap.Any("token", token))
-	return 1, nil
+	return 0.6, nil
 }

@@ -20,6 +20,8 @@ const (
 func ParseCondition(s string) (*Condition, error) {
 	m := map[string]Condition{
 		"DIPS_1H_EMA_20": CONDITION_DIPS_1H_EMA_20,
+		"DIPS_4H_EMA_7":  CONDITION_DIPS_4H_EMA_7,
+		"DIPS_1M_EMA_7":  CONDITION_DIPS_1M_EMA_7,
 	}
 	if c, found := m[s]; found {
 		return &c, nil
@@ -34,8 +36,8 @@ type UserConfig struct {
 	Id     uuid.UUID `bun:",pk,type:uuid" json:"id"`
 	UserId uuid.UUID `bun:"user_id,type:uuid" json:"user_id"`
 	// discord info
-	SendNotify     bool   `bun:"send_notify,type:bool" json:"send_notify"`
-	DiscordWebhook string `bun:"discord_webhook,type:varchar(1024)" json:"discord_webhook"`
+	SendNotify     bool    `bun:"send_notify,type:bool" json:"send_notify"`
+	DiscordWebhook *string `bun:"discord_webhook,type:varchar(1024)" json:"discord_webhook"`
 
 	// condition
 	Conditions []Condition `bun:"conditions,type:jsonb" json:"conditions"`

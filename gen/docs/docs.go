@@ -124,6 +124,12 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "discord_webhook": {
+                    "type": "string"
+                },
+                "send_notify": {
+                    "type": "boolean"
+                },
                 "tokens": {
                     "type": "array",
                     "items": {
@@ -132,32 +138,28 @@ const docTemplate = `{
                 }
             }
         },
+        "model.TokenPriceEma": {
+            "type": "object",
+            "properties": {
+                "metric": {
+                    "type": "string"
+                },
+                "resolution": {
+                    "$ref": "#/definitions/timeseries.Resolution"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
         "model.TokenPriceModel": {
             "type": "object",
             "properties": {
-                "ema20_1d": {
-                    "type": "number"
-                },
-                "ema20_1h": {
-                    "type": "number"
-                },
-                "ema20_1m": {
-                    "type": "number"
-                },
-                "ema20_4h": {
-                    "type": "number"
-                },
-                "ema7_1d": {
-                    "type": "number"
-                },
-                "ema7_1h": {
-                    "type": "number"
-                },
-                "ema7_1m": {
-                    "type": "number"
-                },
-                "ema7_4h": {
-                    "type": "number"
+                "ema": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.TokenPriceEma"
+                    }
                 },
                 "price_usd": {
                     "type": "number"
@@ -181,8 +183,15 @@ const docTemplate = `{
                     "description": "audit",
                     "type": "string"
                 },
+                "discord_webhook": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
+                },
+                "send_notify": {
+                    "description": "discord info",
+                    "type": "boolean"
                 },
                 "token": {
                     "description": "token list",
@@ -216,6 +225,21 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        },
+        "timeseries.Resolution": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "x-enum-varnames": [
+                "TIME_RESOLUTION_1_MIN",
+                "TIME_RESOLUTION_1_HOUR",
+                "TIME_RESOLUTION_4_HOURS",
+                "TIME_RESOLUTION_1_DAY"
+            ]
         }
     },
     "securityDefinitions": {

@@ -24,9 +24,9 @@ func TestCapacity(t *testing.T) {
 	}, capacity, nil)
 
 	ts := time.Now()
-	mrt.Add(1.0, ts)
-	mrt.Add(2.0, ts.Add(1*time.Minute))
-	mrt.Add(3.0, ts.Add(2*time.Minute))
+	mrt.Add(1.0, ts, true)
+	mrt.Add(2.0, ts.Add(1*time.Minute), true)
+	mrt.Add(3.0, ts.Add(2*time.Minute), true)
 
 	series, _ := mrt.GetSeries(TIME_RESOLUTION_1_MIN)
 
@@ -50,11 +50,11 @@ func TestBucket(t *testing.T) {
 	ts_base, _ := time.Parse("2006-01-02 15:04:05", "2006-01-02 16:00:00")
 	ts := ts_base.Add(80 * time.Second)
 
-	mrt.Add(1.0, ts)
-	mrt.Add(2.0, ts.Add(1*time.Minute))
-	mrt.Add(3.0, ts.Add(2*time.Minute))
-	mrt.Add(4.0, ts.Add(2*time.Hour))
-	mrt.Add(5.0, ts.Add(4*time.Hour))
+	mrt.Add(1.0, ts, true)
+	mrt.Add(2.0, ts.Add(1*time.Minute), true)
+	mrt.Add(3.0, ts.Add(2*time.Minute), true)
+	mrt.Add(4.0, ts.Add(2*time.Hour), true)
+	mrt.Add(5.0, ts.Add(4*time.Hour), true)
 
 	series_1_min, _ := mrt.GetSeries(TIME_RESOLUTION_1_MIN)
 

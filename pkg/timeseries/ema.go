@@ -1,6 +1,8 @@
 package timeseries
 
-import "errors"
+import (
+	"errors"
+)
 
 func CalcSMAFromTimeSeries(series []*TimeValue) (float32, error) {
 	var total float32 = 0.0

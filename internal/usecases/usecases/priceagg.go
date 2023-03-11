@@ -32,10 +32,6 @@ func (s *state) Save(metric string, resolution timeseries.Resolution, value floa
 			Value:      value,
 		}
 	}
-
-	// always save the last price
-	s.price = value
-	s.time = time.Now()
 }
 
 func (s *state) Get(metric string, resolution timeseries.Resolution) (float32, error) {
@@ -127,6 +123,9 @@ func (p *priceAgg) GetTokenPriceState(token string) (*model.TokenPriceModel, err
 func (p *priceAgg) CalcEMA(token string, resolution timeseries.Resolution, value float32, ts time.Time, emaSmooth float32) error {
 	price, _ := p.GetToken(token)
 	priceSeries, err := price.GetSeries(resolution)
+	// for _, s := range priceSeries {
+	// 	fmt.Printf("debug %v %v\n", s.Value, s.Time)
+	// }
 	if err != nil {
 		return err
 	}
@@ -134,11 +133,16 @@ func (p *priceAgg) CalcEMA(token string, resolution timeseries.Resolution, value
 	state := p.tokenPriceState[token]
 	// ema7
 	ema7, _ := timeseries.CalcEMAFromTimeSeries(priceSeries, 7, emaSmooth)
+	fmt.Printf("ema-7 %v\n", ema7)
 	state.Save("ema-7", resolution, ema7)
 
 	// ema20
 	ema20, _ := timeseries.CalcEMAFromTimeSeries(priceSeries, 20, emaSmooth)
 	state.Save("ema-20", resolution, ema20)
+
+	// update current price
+	state.price = value
+	state.time = ts
 
 	return nil
 }

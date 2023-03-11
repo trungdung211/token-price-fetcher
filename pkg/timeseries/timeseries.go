@@ -14,6 +14,7 @@ type TimeValueResolution struct {
 	TV         *TimeValue
 	Resolution Resolution
 	Name       string
+	New        bool // Whether the data is new or not, to avoid re-persist data in db at loading phase
 }
 
 type MultiResolutionTimeSeries struct {
@@ -50,11 +51,12 @@ func (t *MultiResolutionTimeSeries) Add(value float32, ts time.Time, new bool) {
 			if len(t.series[resol]) > t.capacity {
 				t.series[resol] = t.series[resol][1:]
 			}
-			if new && t.insertChan != nil {
+			if t.insertChan != nil {
 				(*t.insertChan) <- &TimeValueResolution{
 					TV:         tv,
 					Resolution: resol,
 					Name:       t.name,
+					New:        new,
 				}
 			}
 		}

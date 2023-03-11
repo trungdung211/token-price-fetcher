@@ -87,19 +87,24 @@ func (uc *priceUsecase) FetchForever() error {
 		for {
 			inserted := <-uc.insertChan
 			token := inserted.Name
-			// persist to db
-			uc.priceRepo.InsertPrice(ctx, &model.Price{
-				Time:       inserted.TV.Time,
-				PriceUSD:   inserted.TV.Value,
-				Token:      token,
-				Resolution: inserted.Resolution,
-			})
+
 			// calc ema
 			uc.priceAgg.CalcEMA(token, inserted.Resolution, inserted.TV.Value, inserted.TV.Time, uc.emaSmooth)
 
-			// trigger condition
-			updatedState, _ := uc.priceAgg.GetTokenPriceState(inserted.Name)
-			go uc.trigger.Trigger(ctx, token, updatedState)
+			// don't expect to send alert or re-persist price in data loading phase (when inserted.New = false)
+			if inserted.New {
+				// persist to db
+				uc.priceRepo.InsertPrice(ctx, &model.Price{
+					Time:       inserted.TV.Time,
+					PriceUSD:   inserted.TV.Value,
+					Token:      token,
+					Resolution: inserted.Resolution,
+				})
+
+				// trigger condition
+				updatedState, _ := uc.priceAgg.GetTokenPriceState(inserted.Name)
+				go uc.trigger.Trigger(ctx, token, updatedState)
+			}
 		}
 	}()
 

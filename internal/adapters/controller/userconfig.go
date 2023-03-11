@@ -25,8 +25,10 @@ func NewUserConfigController(us usecase.UserConfig, pc usecase.PriceUc, l *zap.L
 }
 
 type updateUserConfigReq struct {
-	Conditions []string `json:"condition"`
-	Tokens     []string `json:"tokens"`
+	Conditions     []string `json:"condition"`
+	Tokens         []string `json:"tokens"`
+	SendNotify     bool     `json:"send_notify"`
+	DiscordWebhook *string  `json:"discord_webhook"`
 }
 
 // @Summary Update User Config
@@ -61,8 +63,10 @@ func (uc *UserConfigController) UpdateConfig(c *gin.Context) {
 
 	// do update config
 	u := &model.UserConfig{
-		Conditions: conditions,
-		Tokens:     req.Tokens,
+		Conditions:     conditions,
+		Tokens:         req.Tokens,
+		SendNotify:     req.SendNotify,
+		DiscordWebhook: req.DiscordWebhook,
 	}
 	u, err := uc.userConfigUsecase.UpdateConfig(
 		c.Request.Context(),
@@ -70,7 +74,7 @@ func (uc *UserConfigController) UpdateConfig(c *gin.Context) {
 	)
 	if err != nil {
 		uc.l.Error("userConfigUsecase.UpdateConfig error", zap.Any("err", err))
-		c.Error(err)
+		c.Error(request.NewError(http.StatusBadRequest, "400", err.Error()))
 		return
 	}
 
