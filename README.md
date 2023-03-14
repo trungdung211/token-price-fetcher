@@ -1,7 +1,7 @@
 # Token Price Fetcher
 
 ## Overview
-A token price fetcher that provide caculated data through a simple api server. This application allow to fetch some token's price (configurable), and EMA metric in multiple time resolution, and send warning to the user's discord threads when a specific (configurable) condition is met.
+A token price fetcher that provide calculated data through a simple api server. This application allow to fetch some token's price (configurable), and EMA metric in multiple time resolution, and send warning to the user's discord threads when a specific (configurable) condition is met.
 ### Features
 * [x] Configure specific token list to monitor
 * [x] Configure trigger conditions to warn users, and send warning to discord through webhook api
@@ -18,14 +18,14 @@ A token price fetcher that provide caculated data through a simple api server. T
 ### How it works?
 To keep it simple and get the best performance of calling api (100rps as requirement), I design a pipeline including 3 step: 
 1. Fetch token price from source, store it to database every 1 minute.
-2. Foreach fetched price values, I send it to a list of buckets of multiple resolutions time, including 1 minute, 1 hour, 4 hours, 1 day. If a token price at that time fall into the next bucket, I will calculate the EMA metric of that token price in given resolution.
+2. Foreach fetched price values, I send it to a list of buckets of multiple time resolutions, including 1 minute, 1 hour, 4 hours, 1 day. If a token price at that time fall into the next bucket, I will calculate the EMA metric of that token price in given resolution.
 3. All last calculated EMA metrics and last fetched price are store in memory as state of that token price. API call will receive data only from memory. If a token state change (because there are new EMAs was calculated), I will find all user that subcribed to that token, examine all conditions and send warning to discord if there are any conditions is met.
 
-When restart after crashes, to reconstruct a token state, I query the last 20 price values each resolution, sort ascending by time, then add all value to buckets as in step 2. It's lightweight and fast to recovery from crashes.
+When restart after crashes, to reconstruct a token state, I query the last 20 price values each resolution, sort ascending by time, then add all value to buckets as in step 2. It's an lightweight and fast way to recovery from crashes.
 
 All of this flow is done with goroutines and channels.
 ### Architecture
-This application only include 2 parts (to keep it simple), an api and a postgresql database. I mostly use data in memory so no need an external cache.
+This application only include 2 parts (to keep it simple), an api and a postgresql database. I mostly use data in memory so no need any external caching services.
 
 The diagram
 ![Architecture](./images/diagram.png)
@@ -41,7 +41,7 @@ This code is following the Clean code architecture inspired by Uncle Bob (https:
 
 By using this architecture, I can easily plug-n-play any external token price source in my app with minium effort.
 ### Scalable & Benchmark
-The application is single process. Because number of tokens is limited, we can easily scale more thread to run fetching price task when we get more token subcribed. This design is good at api calling, because all data is store in memory, but if we get more and more users, we need to scale this application to multiple processes. If I had more time, I would try another architecture using a TSDB to store price value data and downsample into multiple resolution, and a producer-consumer pipeline to schedule fetch price tasks.
+The application is single process. Because number of tokens is limited, we can easily scale more threads to run fetching price tasks when we get more tokens subcribed using only one process. This design is good at api calling, because all data values are store in memory, but if we get more and more users, we need to scale this application to multiple processes, also to keep it high availability. If I had more time, I would try another architecture using a TSDB that have responsibility to store price value data and downsample into multiple resolution, and a producer-consumer pipeline to schedule fetch price tasks.
 
 __This is benchmark__
 
