@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  app:
+    image: sk/token-price-fetcher:1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+       - ./config.production.toml:/app/config.toml
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+
+  postgres:
+    image: postgres:14.1-alpine
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: tokenprice
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 1024M

@@ -12,6 +12,12 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
+	"github.com/trungdung211/token-price-fetcher/internal/adapters/external"
+	"github.com/trungdung211/token-price-fetcher/internal/adapters/repo"
+	"github.com/trungdung211/token-price-fetcher/internal/usecases/usecases"
+	usercases "github.com/trungdung211/token-price-fetcher/internal/usecases/usecases"
+	dbpkg "github.com/trungdung211/token-price-fetcher/pkg/postgres"
+
 	// Swagger docs.
 	_ "github.com/trungdung211/token-price-fetcher/gen/docs"
 
@@ -24,8 +30,8 @@ import (
 // @title       Go API
 // @description Project swagger
 // @version     1.0
-// @host        http://localhost:8080
-// @BasePath    /api/v1
+// @host        localhost:8080
+// @BasePath    /
 // @schemes http
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
@@ -34,13 +40,16 @@ func Run() {
 	// init logger
 	l := newLogger()
 	// // init db
-	// db, err := dbpkg.NewPostgresDb(viper.GetString("postgres.uri"), true)
-	// if err != nil {
-	// 	panic(err)
-	// }
+	db, err := dbpkg.NewPostgresDb(viper.GetString("postgres.uri"), false)
+	if err != nil {
+		panic(err)
+	}
 
 	// HTTP Server
 	handler := gin.New()
+
+	// health check
+	handler.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
 
 	// Options
 	handler.Use(gin.Logger())
@@ -50,6 +59,31 @@ func Run() {
 	// Swagger
 	swaggerHandler := ginSwagger.WrapHandler(swaggerFiles.Handler)
 	handler.GET("/swagger/*any", swaggerHandler)
+
+	// init usecase
+	userConfigRepo := repo.NewUserConfigRepo(db)
+	userConfigUsecase := usercases.NewUserConfigUsecase(userConfigRepo)
+
+	priceRepo := repo.NewPriceRepo(db)
+	priceFetcher := external.NewCoinGeckoFetcher(l)
+	discordAlert := external.NewDiscordAlert(
+		l,
+		viper.GetString("discord.botname"),
+		time.Duration(viper.GetInt("discord.delay_send"))*time.Millisecond,
+	)
+	triggerCondition := usecases.NewTriggerCondition(l, userConfigRepo, discordAlert)
+	priceUsecase := usercases.NewPriceUsecase(l, priceRepo, userConfigRepo, priceFetcher, triggerCondition)
+
+	// init router
+	initRouter(handler, l, userConfigUsecase, priceUsecase)
+
+	// init background worker
+	err = priceUsecase.Load(context.Background())
+	if err != nil {
+		l.Error("priceUsecase.Load err", zap.Any("err", err))
+		panic(err)
+	}
+	priceUsecase.FetchForever()
 
 	httpServer := &http.Server{
 		Handler:      handler,

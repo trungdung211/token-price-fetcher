@@ -3,8 +3,11 @@ module github.com/trungdung211/token-price-fetcher
 go 1.19
 
 require (
+	github.com/JulianToledano/goingecko v1.0.1
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
+	github.com/google/uuid v1.3.0
+	github.com/gtuk/discordwebhook v1.1.0
 	github.com/spf13/viper v1.13.0
 	github.com/swaggo/files v0.0.0-20220728132757-551d4a08d97a
 	github.com/swaggo/gin-swagger v1.5.3

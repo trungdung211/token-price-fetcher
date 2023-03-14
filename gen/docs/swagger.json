@@ -9,9 +9,236 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "http://localhost:8080",
-    "basePath": "/api/v1",
-    "paths": {},
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/prices/v1/token/{token}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Price"
+                ],
+                "summary": "Get Token Price",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/request.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.TokenPriceModel"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/userconfig/v1/update": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UserConfig"
+                ],
+                "summary": "Update User Config",
+                "parameters": [
+                    {
+                        "description": "userconfig create body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.updateUserConfigReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/request.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.UserConfig"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controller.updateUserConfigReq": {
+            "type": "object",
+            "properties": {
+                "condition": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "discord_webhook": {
+                    "type": "string"
+                },
+                "send_notify": {
+                    "type": "boolean"
+                },
+                "tokens": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "model.TokenPriceEma": {
+            "type": "object",
+            "properties": {
+                "metric": {
+                    "type": "string"
+                },
+                "resolution": {
+                    "$ref": "#/definitions/timeseries.Resolution"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.TokenPriceModel": {
+            "type": "object",
+            "properties": {
+                "ema": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.TokenPriceEma"
+                    }
+                },
+                "price_usd": {
+                    "type": "number"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.UserConfig": {
+            "type": "object",
+            "properties": {
+                "conditions": {
+                    "description": "condition",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "created_at": {
+                    "description": "audit",
+                    "type": "string"
+                },
+                "discord_webhook": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "send_notify": {
+                    "description": "discord info",
+                    "type": "boolean"
+                },
+                "token": {
+                    "description": "token list",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.Response": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "data": {},
+                "error_code": {
+                    "type": "string"
+                },
+                "error_message": {
+                    "type": "string"
+                },
+                "server_time": {
+                    "type": "integer"
+                }
+            }
+        },
+        "timeseries.Resolution": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "x-enum-varnames": [
+                "TIME_RESOLUTION_1_MIN",
+                "TIME_RESOLUTION_1_HOUR",
+                "TIME_RESOLUTION_4_HOURS",
+                "TIME_RESOLUTION_1_DAY"
+            ]
+        }
+    },
     "securityDefinitions": {
         "ApiKeyAuth": {
             "type": "apiKey",

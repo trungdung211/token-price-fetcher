@@ -1,11 +1,153 @@
-basePath: /api/v1
-host: http://localhost:8080
+basePath: /
+definitions:
+  controller.updateUserConfigReq:
+    properties:
+      condition:
+        items:
+          type: string
+        type: array
+      discord_webhook:
+        type: string
+      send_notify:
+        type: boolean
+      tokens:
+        items:
+          type: string
+        type: array
+    type: object
+  model.TokenPriceEma:
+    properties:
+      metric:
+        type: string
+      resolution:
+        $ref: '#/definitions/timeseries.Resolution'
+      value:
+        type: number
+    type: object
+  model.TokenPriceModel:
+    properties:
+      ema:
+        items:
+          $ref: '#/definitions/model.TokenPriceEma'
+        type: array
+      price_usd:
+        type: number
+      time:
+        type: string
+    type: object
+  model.UserConfig:
+    properties:
+      conditions:
+        description: condition
+        items:
+          type: string
+        type: array
+      created_at:
+        description: audit
+        type: string
+      discord_webhook:
+        type: string
+      id:
+        type: string
+      send_notify:
+        description: discord info
+        type: boolean
+      token:
+        description: token list
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  request.Response:
+    properties:
+      count:
+        type: integer
+      data: {}
+      error_code:
+        type: string
+      error_message:
+        type: string
+      server_time:
+        type: integer
+    type: object
+  timeseries.Resolution:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - TIME_RESOLUTION_1_MIN
+    - TIME_RESOLUTION_1_HOUR
+    - TIME_RESOLUTION_4_HOURS
+    - TIME_RESOLUTION_1_DAY
+host: localhost:8080
 info:
   contact: {}
   description: Project swagger
   title: Go API
   version: "1.0"
-paths: {}
+paths:
+  /prices/v1/token/{token}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/request.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.TokenPriceModel'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Get Token Price
+      tags:
+      - Price
+  /userconfig/v1/update:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: userconfig create body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.updateUserConfigReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/request.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserConfig'
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update User Config
+      tags:
+      - UserConfig
 schemes:
 - http
 securityDefinitions:
