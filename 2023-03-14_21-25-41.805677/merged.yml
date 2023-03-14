@@ -1,0 +1,13 @@
+---
+execution:
+- concurrency: 100
+  hold-for: 1m30s
+  ramp-up: 1m
+  scenario: simple
+scenarios:
+  simple:
+    requests:
+    - http://localhost:8080/prices/v1/token/ethereum
+    - http://localhost:8080/prices/v1/token/bitcoin
+    think-time: 0.25
+

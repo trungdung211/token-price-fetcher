@@ -4,3 +4,8 @@ gin-bin
 vendor
 
 tmp
+
+*.log
+config.toml
+config.production.toml
+coveraage.txt

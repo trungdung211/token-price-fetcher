@@ -1,3 +1,16 @@
 address = ":8080"
 env = "development"
 debug = true
+
+[postgres]
+uri = "postgresql://postgres:postgres@localhost:5432/tokenprice?sslmode=disable"
+
+[price]
+capacity = 20
+emachan_capacity = 1000
+fetch_interval = 60
+fetch_concurrent = 4
+
+[discord]
+botname = "TokenPriceFetcher"
+delay_send = 400
